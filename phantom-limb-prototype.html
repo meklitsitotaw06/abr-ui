@@ -147,9 +147,13 @@
   .medpill{display:inline-flex;align-items:center;gap:8px;background:var(--teal-50);color:var(--teal-700);font-weight:600;font-size:13px;padding:8px 8px 8px 14px;border-radius:999px}
   .medpill button{border:none;background:rgba(15,118,110,.18);color:var(--teal-700);width:20px;height:20px;border-radius:50%;font-size:10px;cursor:pointer;display:grid;place-items:center;line-height:1;flex:0 0 auto}
   .limbcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
-  .limbcard .flab{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px}
+  .limbcard .flab{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 5px}
   .limbcard .flab:first-of-type{margin-top:0}
+  .limbcard select,.limbcard input{padding:11px 14px}
   .limb-x{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;border:none;background:var(--line);color:var(--muted);font-size:12px;cursor:pointer;display:grid;place-items:center;z-index:1}
+  .limb-side{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .side-btn{border:2px solid var(--line);border-radius:13px;padding:10px 8px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;background:#fff;color:var(--ink);transition:.12s;text-align:center}
+  .side-btn.sel{border-color:var(--teal-700);background:var(--teal-50);color:var(--teal-700)}
 
   /* step progress */
   .steps{display:flex;gap:6px;padding:0 20px 12px}
@@ -317,15 +321,17 @@
         <div id="limbList">
           <div class="limbcard">
             <label class="flab">Side</label>
-            <div class="selcard sel" onclick="pick(this)"><span class="emoji">🦵</span><div><div class="t">Right leg</div><div class="s">Right side of the body</div></div></div>
-            <div class="selcard" onclick="pick(this)"><span class="emoji flip">🦵</span><div><div class="t">Left leg</div><div class="s">Left side of the body</div></div></div>
+            <div class="limb-side">
+              <button class="side-btn sel" data-side="right" onclick="pickSide(this)">🦵 Right</button>
+              <button class="side-btn" data-side="left" onclick="pickSide(this)">🦵 Left</button>
+            </div>
             <label class="flab">Amputation level</label>
             <select><option>Below knee (transtibial)</option><option>Above knee (transfemoral)</option><option>Through knee</option><option>Partial foot</option><option>Ankle (Syme's)</option><option>Hip disarticulation</option></select>
             <label class="flab">When did it happen?</label>
             <input type="month" value="2019-06" />
           </div>
         </div>
-        <button class="btn btn-ghost" onclick="addLimb()">＋ Add a limb</button>
+        <button class="btn btn-ghost" id="addLimbBtn" onclick="addLimb()">＋ Add a second limb</button>
       </div>
     </div>
     <div class="footnav" style="flex-direction:column;gap:8px">
@@ -641,16 +647,41 @@
     if(empty&&!list.querySelector('.medpill')) empty.style.display='';
   }
   var LEVELS='<option>Below knee (transtibial)</option><option>Above knee (transfemoral)</option><option>Through knee</option><option>Partial foot</option><option>Ankle (Syme\'s)</option><option>Hip disarticulation</option>';
-  function removeLimb(el){ el.closest('.limbcard').remove(); }
+  function pickSide(btn){
+    btn.parentNode.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    var allCards=Array.from(document.querySelectorAll('#limbList .limbcard'));
+    if(allCards.length===2){
+      var thisCard=btn.closest('.limbcard');
+      var otherCard=allCards.find(c=>c!==thisCard);
+      if(otherCard){
+        var opp=btn.dataset.side==='right'?'left':'right';
+        otherCard.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('sel'));
+        otherCard.querySelector('.side-btn[data-side="'+opp+'"]').classList.add('sel');
+      }
+    }
+  }
+  function removeLimb(el){
+    el.closest('.limbcard').remove();
+    document.getElementById('addLimbBtn').style.display='';
+  }
   function addLimb(){
+    var existing=document.querySelectorAll('#limbList .limbcard');
+    if(existing.length>=2) return;
+    var selBtn=existing[0].querySelector('.side-btn.sel');
+    var existingSide=selBtn?selBtn.dataset.side:'right';
+    var newSide=existingSide==='right'?'left':'right';
     var c=document.createElement('div'); c.className='limbcard';
     c.innerHTML='<button class="limb-x" onclick="removeLimb(this)">✕</button>'
       +'<label class="flab">Side</label>'
-      +'<div class="selcard" onclick="pick(this)"><span class="emoji">🦵</span><div><div class="t">Right leg</div><div class="s">Right side of the body</div></div></div>'
-      +'<div class="selcard sel" onclick="pick(this)"><span class="emoji flip">🦵</span><div><div class="t">Left leg</div><div class="s">Left side of the body</div></div></div>'
+      +'<div class="limb-side">'
+      +'<button class="side-btn'+(newSide==='right'?' sel':'')+'" data-side="right" onclick="pickSide(this)">🦵 Right</button>'
+      +'<button class="side-btn'+(newSide==='left'?' sel':'')+'" data-side="left" onclick="pickSide(this)">🦵 Left</button>'
+      +'</div>'
       +'<label class="flab">Amputation level</label><select>'+LEVELS+'</select>'
       +'<label class="flab">When did it happen?</label><input type="month">';
     document.getElementById('limbList').appendChild(c);
+    document.getElementById('addLimbBtn').style.display='none';
   }
   function openShareSheet(){ document.getElementById('shareSheet').classList.add('open'); }
   function closeShare(){ document.getElementById('shareSheet').classList.remove('open'); }
