@@ -205,8 +205,10 @@
   .seg button.sel{background:#fff;box-shadow:var(--shadow-sm)}
   .viewcard{min-height:321px}
   .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .cal .d{height:30px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:600;background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .cal .d{min-height:38px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 2px;font-size:13px;font-weight:600;background:#fff;border:1px solid var(--line);color:var(--muted)}
   .cal .dow{font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding-bottom:2px}
+  .ep-dots{display:flex;gap:2px;justify-content:center;flex-wrap:wrap}
+  .ep-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
   .insight{display:flex;gap:10px;align-items:center;background:var(--teal-50);border-radius:13px;padding:11px 13px;margin-bottom:8px;font-size:13.5px;line-height:1.45;white-space:nowrap}
   .insight .ic{font-size:18px;flex:0 0 auto}
@@ -412,7 +414,7 @@
         <div class="card viewcard">
           <div style="font-weight:700;font-size:14px;margin-bottom:8px;text-align:center">March 2026</div>
           <div class="cal" id="calgrid"></div>
-          <div class="legend" style="justify-content:center;margin-top:12px"><span><i style="background:#22c55e"></i>Good</span><span><i style="background:#eab308"></i>Mild</span><span><i style="background:#f97316"></i>Moderate</span><span><i style="background:#ef4444"></i>Severe</span></div>
+          <div class="legend" style="justify-content:center;margin-top:12px"><span><i style="background:#84cc16;border-radius:50%"></i>Mild</span><span><i style="background:#eab308;border-radius:50%"></i>Medium</span><span><i style="background:#f97316;border-radius:50%"></i>Bad</span><span><i style="background:#ef4444;border-radius:50%"></i>Severe</span></div>
         </div>
       </div>
 
@@ -602,11 +604,16 @@
     const grid=document.getElementById('calgrid');
     const dow=['S','M','T','W','T','F','S'];
     dow.forEach(d=>{const e=document.createElement('div');e.className='dow';e.textContent=d;grid.appendChild(e);});
-    const colors={3:'#eab308',8:'#22c55e',13:'#ef4444',14:'#f97316',21:'#eab308',24:'#22c55e',27:'#f97316'};
+    // pain episodes only — color matches severity from log form (no "good"/pain-free days)
+    const episodes={3:['#eab308'],13:['#ef4444'],14:['#f97316'],21:['#eab308'],27:['#f97316','#eab308']};
     for(let i=0;i<6;i++){const e=document.createElement('div');e.className='d';e.style.visibility='hidden';grid.appendChild(e);}
-    for(let d=1;d<=31;d++){const e=document.createElement('div');e.className='d';e.textContent=d;
-      if(colors[d]){e.style.background=colors[d];e.style.color='#fff';e.style.borderColor='transparent';e.style.cursor='pointer';e.onclick=()=>go('day');}
-      grid.appendChild(e);}
+    for(let d=1;d<=31;d++){
+      const e=document.createElement('div');e.className='d';
+      const eps=episodes[d]||[];
+      e.innerHTML='<span>'+d+'</span>'+(eps.length?'<div class="ep-dots">'+eps.map(c=>'<span class="ep-dot" style="background:'+c+'"></span>').join('')+'</div>':'');
+      if(eps.length){e.style.cursor='pointer';e.onclick=()=>go('day');}
+      grid.appendChild(e);
+    }
   })();
   function openShare(){ go('insights'); var el=document.getElementById('shareSection'); if(el) el.scrollIntoView({block:'start'}); }
   function obStep(n){
