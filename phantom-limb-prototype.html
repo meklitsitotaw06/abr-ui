@@ -557,6 +557,17 @@
     </div>
   </div>
 
+  <!-- HIGH SEVERITY ALERT -->
+  <div class="sheet-backdrop" id="severityAlert" onclick="if(event.target===this)closeSeverityAlert()">
+    <div class="sheet">
+      <div style="text-align:center;font-size:44px;margin-bottom:10px">🏥</div>
+      <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:19px;margin-bottom:10px;text-align:center;color:var(--ink)">Check in with your care team</div>
+      <p style="color:var(--muted);font-size:14.5px;line-height:1.55;margin:0 0 20px;text-align:center">Pain at this level is worth mentioning to your healthcare provider or pain specialist soon. You don't have to manage this alone.</p>
+      <button class="btn btn-primary" style="margin-bottom:10px" onclick="closeSeverityAlert()">Continue logging</button>
+      <button class="sheet-cancel" onclick="closeSeverityAlert()">Dismiss</button>
+    </div>
+  </div>
+
   <!-- NATIVE SHARE SHEET (mock) -->
   <div class="sheet-backdrop" id="shareSheet" onclick="if(event.target===this)closeShare()">
     <div class="sheet">
@@ -593,7 +604,13 @@
     syncTabs(id);
   }
   function pick(el){el.parentNode.querySelectorAll('.selcard').forEach(c=>{if(c.querySelector('.t'))c.classList.remove('sel')});el.classList.add('sel');}
-  function pickFace(el){el.parentNode.querySelectorAll('.face').forEach(f=>f.classList.remove('sel'));el.classList.add('sel');}
+  function pickFace(el){
+    el.parentNode.querySelectorAll('.face').forEach(f=>f.classList.remove('sel'));
+    el.classList.add('sel');
+    if(document.getElementById('log').classList.contains('active')&&step===0&&(el.dataset.s==='4'||el.dataset.s==='5')){
+      showSeverityAlert();
+    }
+  }
 
   // bottom tab bar (rendered into each screen that has one)
   const TABS=[
@@ -645,6 +662,8 @@
     document.getElementById('medSheet').classList.add('open');
   }
   function closeMedModal(){ document.getElementById('medSheet').classList.remove('open'); }
+  function showSeverityAlert(){ document.getElementById('severityAlert').classList.add('open'); }
+  function closeSeverityAlert(){ document.getElementById('severityAlert').classList.remove('open'); }
   function saveMed(){
     var name=document.getElementById('medName').value.trim();
     var dose=document.getElementById('medDose').value.trim();
@@ -840,9 +859,9 @@
     var dh=document.getElementById('durH');if(dh)dh.textContent=_durH;
     var dm=document.getElementById('durM');if(dm)dm.textContent=String(_durM).padStart(2,'0');
   }
-  function saveNow(){go('saved');setTimeout(function(){go('insights');},1800);}
+  function saveNow(){go('saved');setTimeout(function(){resView('try');go('resources');},1800);}
   function startLog(){step=0;renderStep();go('log');}
-  function logNext(){ if(step<STEPS.length-1){step++;renderStep();} else { go('saved'); setTimeout(function(){ go('insights'); }, 1800); } }
+  function logNext(){ if(step<STEPS.length-1){step++;renderStep();} else { go('saved'); setTimeout(function(){ resView('try');go('resources'); }, 1800); } }
   function logBack(){ if(step>0){step--;renderStep();} else { go('home'); } }
 
   // boot
