@@ -71,6 +71,13 @@
   .btn-primary{background:linear-gradient(135deg,var(--teal-600),var(--teal-900) 55%,var(--navy));color:#fff;box-shadow:var(--shadow)}
   .btn-primary:active{transform:scale(.985);filter:brightness(.93)}
   .btn-ghost{background:var(--teal-50);color:var(--teal-700)}
+  .btn-outline{background:#fff;color:var(--teal-700);border:2.5px solid var(--teal-700)}
+  .dur-picker{display:flex;gap:14px;margin:12px 0 22px}
+  .dur-unit{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .dur-btn{width:100%;height:44px;border:none;background:var(--teal-50);color:var(--teal-700);font-size:22px;font-weight:800;border-radius:12px;cursor:pointer;display:grid;place-items:center;transition:.12s}
+  .dur-btn:active{filter:brightness(.92)}
+  .dur-display{font-family:'Sora',sans-serif;font-size:42px;font-weight:800;color:var(--ink);line-height:1}
+  .dur-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
   .btn-lg{font-size:19px;padding:20px}
   .sectlabel{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 10px}
 
@@ -362,8 +369,8 @@
       </div>
       <div class="sectlabel">Recent episodes</div>
       <div class="card">
-        <div class="epi" onclick="go('day')"><div class="dot" style="background:#fef0f0">😖</div><div><div class="t">Severe · electric shock</div><div class="s">Mar 13 · 30 min · after a flight</div></div><span class="chev">›</span></div>
-        <div class="epi" onclick="go('day')"><div class="dot" style="background:#fff5ec">😣</div><div><div class="t">Moderate · throbbing</div><div class="s">Mar 2 · 15 min</div></div><span class="chev">›</span></div>
+        <div class="epi" onclick="go('day')"><div class="dot" style="background:#fef0f0">😖</div><div><div class="t">Severe · electric shock</div><div class="s">Mar 13 · 7:20 PM · 30 min</div></div><span class="chev">›</span></div>
+        <div class="epi" onclick="go('day')"><div class="dot" style="background:#fff5ec">😣</div><div><div class="t">Moderate · throbbing</div><div class="s">Mar 13 · 11:05 AM · 15 min</div></div><span class="chev">›</span></div>
         <div class="epi" onclick="go('day')"><div class="dot" style="background:#fefce8">😐</div><div><div class="t">Mild · tingling</div><div class="s">Feb 24 · 10 min</div></div><span class="chev">›</span></div>
       </div>
     </div>
@@ -376,7 +383,10 @@
     <div class="steps" id="logsteps"></div>
     <div class="scroll" id="logbody"></div>
     <div class="footnav" style="flex-direction:column;gap:8px">
-      <button class="btn btn-primary" id="lognext" onclick="logNext()">Next →</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline" id="logsave" onclick="saveNow()">💾 Save now</button>
+        <button class="btn btn-primary" id="lognext" onclick="logNext()">Continue →</button>
+      </div>
       <button class="skiplink" id="logskip" onclick="logNext()" style="display:none;margin:0">Skip this step</button>
     </div>
   </section>
@@ -605,7 +615,7 @@
     const dow=['S','M','T','W','T','F','S'];
     dow.forEach(d=>{const e=document.createElement('div');e.className='dow';e.textContent=d;grid.appendChild(e);});
     // pain episodes only — color matches severity from log form (no "good"/pain-free days)
-    const episodes={3:['#eab308'],13:['#ef4444'],14:['#f97316'],21:['#eab308'],27:['#f97316','#eab308']};
+    const episodes={3:['#eab308'],13:['#ef4444','#f97316'],14:['#f97316'],21:['#eab308'],27:['#f97316','#eab308']};
     for(let i=0;i<6;i++){const e=document.createElement('div');e.className='d';e.style.visibility='hidden';grid.appendChild(e);}
     for(let d=1;d<=31;d++){
       const e=document.createElement('div');e.className='d';
@@ -731,11 +741,19 @@
         <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
       </div>`},
     {q:'How long has it lasted?',html:`
-      <div class="chipgrid" style="margin-bottom:22px">
-        <span class="chip" onclick="oneChip(this)">Just started</span>
-        <span class="chip sel" onclick="oneChip(this)">~30 min</span>
-        <span class="chip" onclick="oneChip(this)">A few hours</span>
-        <span class="chip" onclick="oneChip(this)">All day</span>
+      <div class="dur-picker">
+        <div class="dur-unit">
+          <button class="dur-btn" onclick="adjDur('h',1)">＋</button>
+          <div class="dur-display" id="durH">0</div>
+          <button class="dur-btn" onclick="adjDur('h',-1)">−</button>
+          <span class="dur-lbl">hours</span>
+        </div>
+        <div class="dur-unit">
+          <button class="dur-btn" onclick="adjDur('m',1)">＋</button>
+          <div class="dur-display" id="durM">30</div>
+          <button class="dur-btn" onclick="adjDur('m',-1)">−</button>
+          <span class="dur-lbl">minutes</span>
+        </div>
       </div>
       <div class="sectlabel" style="margin-left:0">How did it come on?</div>
       <div class="chipgrid">
@@ -792,9 +810,19 @@
     document.getElementById('logbody').innerHTML=`<div class="stepq">${s.q}</div>`+s.html;
     document.getElementById('logcount').textContent=`Step ${step+1} of ${STEPS.length}`;
     document.getElementById('logsteps').innerHTML=STEPS.map((_,i)=>`<i class="${i<=step?'done':''}"></i>`).join('');
-    document.getElementById('lognext').textContent= step===STEPS.length-1?'Save episode ✓':'Next →';
+    document.getElementById('lognext').textContent= step===STEPS.length-1?'Save episode ✓':'Continue →';
+    if(step===3){_durH=0;_durM=30;}
     var sk=document.getElementById('logskip'); if(sk) sk.style.display = (step>=2 && step<=4) ? 'block' : 'none';
   }
+  var _durH=0,_durM=30;
+  function adjDur(unit,delta){
+    if(unit==='h') _durH=Math.max(0,Math.min(23,_durH+delta));
+    else _durM=Math.max(0,Math.min(59,_durM+delta));
+    if(_durH===0&&_durM===0){if(unit==='m')_durM=1;else _durM=5;}
+    var dh=document.getElementById('durH');if(dh)dh.textContent=_durH;
+    var dm=document.getElementById('durM');if(dm)dm.textContent=String(_durM).padStart(2,'0');
+  }
+  function saveNow(){go('saved');setTimeout(function(){go('insights');},1800);}
   function startLog(){step=0;renderStep();go('log');}
   function logNext(){ if(step<STEPS.length-1){step++;renderStep();} else { go('saved'); setTimeout(function(){ go('insights'); }, 1800); } }
   function logBack(){ if(step>0){step--;renderStep();} else { go('home'); } }
