@@ -72,12 +72,14 @@
   .btn-primary:active{transform:scale(.985);filter:brightness(.93)}
   .btn-ghost{background:var(--teal-50);color:var(--teal-700)}
   .btn-outline{background:#fff;color:var(--teal-700);border:2.5px solid var(--teal-700)}
-  .dur-picker{display:flex;gap:14px;margin:12px 0 22px}
-  .dur-unit{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
-  .dur-btn{width:100%;height:44px;border:none;background:var(--teal-50);color:var(--teal-700);font-size:22px;font-weight:800;border-radius:12px;cursor:pointer;display:grid;place-items:center;transition:.12s}
+  .btn-lightblue{background:#dbeafe;color:#1e40af}
+  .dur-picker{display:flex;align-items:center;justify-content:center;gap:16px;margin:10px 0 18px;background:var(--teal-50);border-radius:16px;padding:13px 18px}
+  .dur-unit{display:flex;align-items:center;gap:7px}
+  .dur-sep{width:5px;height:5px;border-radius:50%;background:var(--line);flex:0 0 auto}
+  .dur-btn{width:30px;height:30px;border:none;background:#fff;color:var(--teal-700);font-size:17px;font-weight:800;border-radius:8px;cursor:pointer;display:grid;place-items:center;transition:.12s;box-shadow:var(--shadow-sm);flex:0 0 auto}
   .dur-btn:active{filter:brightness(.92)}
-  .dur-display{font-family:'Sora',sans-serif;font-size:42px;font-weight:800;color:var(--ink);line-height:1}
-  .dur-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .dur-display{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--ink);line-height:1;min-width:32px;text-align:center}
+  .dur-lbl{font-size:12px;font-weight:600;color:var(--muted)}
   .btn-lg{font-size:19px;padding:20px}
   .sectlabel{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 10px}
 
@@ -384,10 +386,9 @@
     <div class="scroll" id="logbody"></div>
     <div class="footnav" style="flex-direction:column;gap:8px">
       <div style="display:flex;gap:10px">
-        <button class="btn btn-outline" id="logsave" onclick="saveNow()">💾 Save now</button>
+        <button class="btn btn-lightblue" id="logsave" onclick="saveNow()">Quick save</button>
         <button class="btn btn-primary" id="lognext" onclick="logNext()">Continue →</button>
       </div>
-      <button class="skiplink" id="logskip" onclick="logNext()" style="display:none;margin:0">Skip this step</button>
     </div>
   </section>
 
@@ -563,8 +564,7 @@
       <div style="text-align:center;font-size:44px;margin-bottom:10px">🏥</div>
       <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:19px;margin-bottom:10px;text-align:center;color:var(--ink)">Check in with your care team</div>
       <p style="color:var(--muted);font-size:14.5px;line-height:1.55;margin:0 0 20px;text-align:center">Pain at this level is worth mentioning to your healthcare provider or pain specialist soon. You don't have to manage this alone.</p>
-      <button class="btn btn-primary" style="margin-bottom:10px" onclick="closeSeverityAlert()">Continue logging</button>
-      <button class="sheet-cancel" onclick="closeSeverityAlert()">Dismiss</button>
+      <button class="btn btn-primary" onclick="closeSeverityAlert()">Got it</button>
     </div>
   </div>
 
@@ -773,16 +773,17 @@
       <div class="sectlabel">How long has it lasted?</div>
       <div class="dur-picker">
         <div class="dur-unit">
-          <button class="dur-btn" onclick="adjDur('h',1)">＋</button>
-          <div class="dur-display" id="durH">0</div>
           <button class="dur-btn" onclick="adjDur('h',-1)">−</button>
-          <span class="dur-lbl">hours</span>
+          <div class="dur-display" id="durH">0</div>
+          <button class="dur-btn" onclick="adjDur('h',1)">＋</button>
+          <span class="dur-lbl">hrs</span>
         </div>
+        <div class="dur-sep"></div>
         <div class="dur-unit">
-          <button class="dur-btn" onclick="adjDur('m',1)">＋</button>
-          <div class="dur-display" id="durM">30</div>
           <button class="dur-btn" onclick="adjDur('m',-1)">−</button>
-          <span class="dur-lbl">minutes</span>
+          <div class="dur-display" id="durM">30</div>
+          <button class="dur-btn" onclick="adjDur('m',1)">＋</button>
+          <span class="dur-lbl">min</span>
         </div>
       </div>
       <div class="sectlabel" style="margin-top:0">How did it come on?</div>
@@ -848,8 +849,6 @@
     else{bar.style.display='flex';bar.innerHTML=STEPS.slice(1).map((_,i)=>'<i class="'+(i<step?'done':'')+'"></i>').join('');}
     document.getElementById('lognext').textContent=step===STEPS.length-1?'Save episode ✓':'Continue →';
     if(step===1){_durH=0;_durM=30;}
-    var sv=document.getElementById('logsave');if(sv)sv.style.display=step===0?'none':'';
-    var sk=document.getElementById('logskip');if(sk)sk.style.display=(step>=1&&step<=3)?'block':'none';
   }
   var _durH=0,_durM=30;
   function adjDur(unit,delta){
