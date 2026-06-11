@@ -143,7 +143,7 @@
 
   select,input[type=text],input[type=month],input[type=date]{width:100%;padding:14px;border-radius:14px;border:2px solid var(--line);font-family:inherit;font-size:15px;font-weight:500;background:#fff;color:var(--ink)}
   .medlist{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-  .medlist:empty{display:none}
+  .med-empty{color:var(--muted);font-size:13.5px;margin:4px 0;font-style:italic}
   .medpill{display:inline-flex;align-items:center;gap:8px;background:var(--teal-50);color:var(--teal-700);font-weight:600;font-size:13px;padding:8px 8px 8px 14px;border-radius:999px}
   .medpill button{border:none;background:rgba(15,118,110,.18);color:var(--teal-700);width:20px;height:20px;border-radius:50%;font-size:10px;cursor:pointer;display:grid;place-items:center;line-height:1;flex:0 0 auto}
   .limbcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
@@ -308,7 +308,7 @@
         <input type="text" inputmode="numeric" placeholder="Age of the person with the amputation" value="54" />
         <div class="sectlabel">Medications for phantom pain</div>
         <div class="medlist" id="medList">
-          <span class="medpill">Gabapentin 300mg<button onclick="this.parentNode.remove()">✕</button></span>
+          <p class="med-empty">No medications added yet.</p>
         </div>
         <button class="btn btn-ghost" onclick="addMed()">＋ Add medication</button>
       </div>
@@ -506,7 +506,7 @@
       </div>
       <button class="btn btn-ghost" style="margin-bottom:4px">＋ Add a limb</button>
       <div class="sectlabel">Medications for phantom pain</div>
-      <div class="medlist" id="medListProfile"><span class="medpill">Gabapentin 300mg<button onclick="this.parentNode.remove()">✕</button></span></div>
+      <div class="medlist" id="medListProfile"><p class="med-empty">No medications added yet.</p></div>
       <button class="btn btn-ghost" onclick="addMed('medListProfile')">＋ Add medication</button>
       <div class="sectlabel">Settings</div>
       <div class="card">
@@ -515,6 +515,29 @@
     </div>
     <div class="tabbar" id="tabs9"></div>
   </section>
+
+  <!-- MED ENTRY SHEET -->
+  <div class="sheet-backdrop" id="medSheet" onclick="if(event.target===this)closeMedModal()">
+    <div class="sheet">
+      <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:17px;margin-bottom:16px">Add medication</div>
+      <div style="margin-bottom:12px">
+        <div class="flab" style="margin-top:0">Medication name</div>
+        <input type="text" id="medName" placeholder="e.g. Gabapentin" />
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <div style="flex:1">
+          <div class="flab">Dosage amount</div>
+          <input type="text" id="medDose" inputmode="decimal" placeholder="e.g. 300" />
+        </div>
+        <div style="flex:0 0 105px">
+          <div class="flab">Unit</div>
+          <select id="medUnit"><option>mg</option><option>mcg</option><option>ml</option><option>g</option><option>oz</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-bottom:10px" onclick="saveMed()">Add medication</button>
+      <button class="sheet-cancel" onclick="closeMedModal()">Cancel</button>
+    </div>
+  </div>
 
   <!-- NATIVE SHARE SHEET (mock) -->
   <div class="sheet-backdrop" id="shareSheet" onclick="if(event.target===this)closeShare()">
@@ -590,13 +613,32 @@
     window._obStep=n;
   }
   function obNext(){ if((window._obStep||1)===1) obStep(2); else go('home'); }
-  var MEDS=['Pregabalin 75mg','Amitriptyline 10mg','Duloxetine 30mg','Acetaminophen 500mg','Ibuprofen 200mg'];
-  var medIdx=0;
+  var _medTarget=null;
   function addMed(listId){
-    var name=MEDS[medIdx%MEDS.length]; medIdx++;
+    _medTarget=listId||'medList';
+    document.getElementById('medName').value='';
+    document.getElementById('medDose').value='';
+    document.getElementById('medUnit').selectedIndex=0;
+    document.getElementById('medSheet').classList.add('open');
+  }
+  function closeMedModal(){ document.getElementById('medSheet').classList.remove('open'); }
+  function saveMed(){
+    var name=document.getElementById('medName').value.trim();
+    var dose=document.getElementById('medDose').value.trim();
+    var unit=document.getElementById('medUnit').value;
+    if(!name){ document.getElementById('medName').focus(); return; }
+    var label=dose?name+' '+dose+unit:name;
+    var list=document.getElementById(_medTarget);
+    var empty=list.querySelector('.med-empty'); if(empty) empty.style.display='none';
     var pill=document.createElement('span'); pill.className='medpill';
-    pill.innerHTML=name+'<button onclick="this.parentNode.remove()">✕</button>';
-    document.getElementById(listId||'medList').appendChild(pill);
+    pill.innerHTML=label+'<button onclick="removeMed(this)">✕</button>';
+    list.appendChild(pill);
+    closeMedModal();
+  }
+  function removeMed(btn){
+    var list=btn.parentNode.parentNode; btn.parentNode.remove();
+    var empty=list.querySelector('.med-empty');
+    if(empty&&!list.querySelector('.medpill')) empty.style.display='';
   }
   var LEVELS='<option>Below knee (transtibial)</option><option>Above knee (transfemoral)</option><option>Through knee</option><option>Partial foot</option><option>Ankle (Syme\'s)</option><option>Hip disarticulation</option>';
   function removeLimb(el){ el.closest('.limbcard').remove(); }
