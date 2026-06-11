@@ -151,6 +151,9 @@
   .condense .row .t{font-size:16px}
 
   select,input[type=text],input[type=month],input[type=date]{width:100%;padding:14px;border-radius:14px;border:2px solid var(--line);font-family:inherit;font-size:15px;font-weight:500;background:#fff;color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--teal-100);outline:none;cursor:pointer;border:none;padding:0;margin:8px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--teal-600);cursor:pointer;box-shadow:0 2px 6px rgba(15,118,110,.25)}
+  input[type=range]:disabled{opacity:.35;cursor:not-allowed}
   .medlist{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
   .med-empty{color:var(--muted);font-size:13.5px;margin:4px 0;font-style:italic}
   .medpill{display:inline-flex;align-items:center;gap:8px;background:var(--teal-50);color:var(--teal-700);font-weight:600;font-size:13px;padding:8px 8px 8px 14px;border-radius:999px}
@@ -280,6 +283,7 @@
   <button onclick="go('day')">⑥ Day detail</button>
   <button onclick="go('resources')">⑦ Resources</button>
   <button onclick="go('profile')">⑨ Profile</button>
+  <button onclick="go('checkin')">✓ Daily check-in</button>
 </div>
 
 <div class="phone">
@@ -354,19 +358,19 @@
   <!-- ② HOME -->
   <section class="screen" id="home">
     <div class="scroll">
-      <button class="logmain" onclick="startLog()" style="margin-top:18px">
+      <div style="padding:14px 4px 6px">
+        <div id="welcomeGreet" style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.3px;color:var(--ink)">Good morning 👋</div>
+        <div style="font-size:13px;color:var(--muted);font-weight:500;margin-top:2px">Here's your overview for today.</div>
+      </div>
+      <button class="logmain" onclick="startLog()" style="margin-top:10px">
         <span class="logmain-ic">＋</span>
         <span class="logmain-tx"><b>Log pain right now</b><i>In pain? Capture it in under a minute.</i></span>
       </button>
       <div class="daysline">🎉 <b>12 days</b> since your last episode</div>
-      <div class="card">
-        <div class="row" style="border:none;padding-top:4px"><div><div class="t">How's today going?</div><div class="s">Quick daily check-in</div></div></div>
-        <div class="faces" style="margin-top:6px;margin-bottom:6px">
-          <div class="face" data-s="1" onclick="pickFace(this)">😀</div>
-          <div class="face" data-s="2" onclick="pickFace(this)">🙂</div>
-          <div class="face" data-s="3" onclick="pickFace(this)">😐</div>
-          <div class="face" data-s="4" onclick="pickFace(this)">😣</div>
-          <div class="face" data-s="5" onclick="pickFace(this)">😖</div>
+      <div class="card" onclick="go('checkin')" style="cursor:pointer">
+        <div class="row" style="border:none;padding:6px 0;align-items:center">
+          <div><div class="t">How's today going?</div><div class="s">Log sleep, activity &amp; mood</div></div>
+          <span class="chev">›</span>
         </div>
       </div>
       <div class="sectlabel">Recent episodes</div>
@@ -533,6 +537,86 @@
       </div>
     </div>
     <div class="tabbar" id="tabs9"></div>
+  </section>
+
+  <!-- DAILY CHECK-IN -->
+  <section class="screen" id="checkin">
+    <div class="nav" style="padding:6px 20px 4px"><button class="back" onclick="go('home')">‹ Home</button></div>
+    <div class="scroll">
+      <div class="stepq">Tell us about<br>your day</div>
+
+      <div class="sectlabel">Sleep last night</div>
+      <div class="dur-picker">
+        <div class="dur-unit">
+          <button class="dur-btn" onclick="adjSleep('h',-1)">−</button>
+          <div class="dur-display" id="sleepH">7</div>
+          <button class="dur-btn" onclick="adjSleep('h',1)">＋</button>
+          <span class="dur-lbl">hrs</span>
+        </div>
+        <div class="dur-sep"></div>
+        <div class="dur-unit">
+          <button class="dur-btn" onclick="adjSleep('m',-1)">−</button>
+          <div class="dur-display" id="sleepM">00</div>
+          <button class="dur-btn" onclick="adjSleep('m',1)">＋</button>
+          <span class="dur-lbl">min</span>
+        </div>
+      </div>
+
+      <div class="sectlabel">Prosthetic wear today</div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="row" style="padding:8px 0">
+          <div class="t">All day</div>
+          <div class="toggle" id="allDayToggle" onclick="toggleAllDay(this)"></div>
+        </div>
+        <div id="prosSliderWrap" style="padding:4px 0 6px">
+          <input type="range" id="prosSlider" min="0" max="12" value="8" oninput="updateProsLabel()" />
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+            <span style="font-size:11px;color:var(--muted);font-weight:600">0 hrs</span>
+            <span id="prosVal" style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--ink)">8 hrs</span>
+            <span style="font-size:11px;color:var(--muted);font-weight:600">12 hrs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sectlabel">Exercise</div>
+      <p class="stephint" style="margin-bottom:10px">What type? Pick all that apply.</p>
+      <div class="chips" style="margin-bottom:14px">
+        <span class="chip" onclick="this.classList.toggle('sel')">🚶 Walk</span>
+        <span class="chip" onclick="this.classList.toggle('sel')">🏃 Run</span>
+        <span class="chip" onclick="this.classList.toggle('sel')">🏊 Swim</span>
+        <span class="chip" onclick="this.classList.toggle('sel')">🚴 Bike</span>
+        <span class="chip" onclick="this.classList.toggle('sel')">🏋️ Gym</span>
+        <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
+      </div>
+      <div class="sectlabel" style="margin-top:0">Exercise duration</div>
+      <div class="dur-picker">
+        <div class="dur-unit">
+          <button class="dur-btn" onclick="adjEx('h',-1)">−</button>
+          <div class="dur-display" id="exH">0</div>
+          <button class="dur-btn" onclick="adjEx('h',1)">＋</button>
+          <span class="dur-lbl">hrs</span>
+        </div>
+        <div class="dur-sep"></div>
+        <div class="dur-unit">
+          <button class="dur-btn" onclick="adjEx('m',-1)">−</button>
+          <div class="dur-display" id="exM">00</div>
+          <button class="dur-btn" onclick="adjEx('m',1)">＋</button>
+          <span class="dur-lbl">min</span>
+        </div>
+      </div>
+
+      <div class="sectlabel">Overall mood</div>
+      <div class="faces" style="margin-bottom:24px">
+        <div class="face" data-s="1" onclick="pickCheckinFace(this)">😀<span class="lab">Great</span></div>
+        <div class="face" data-s="2" onclick="pickCheckinFace(this)">🙂<span class="lab">Good</span></div>
+        <div class="face" data-s="3" onclick="pickCheckinFace(this)">😐<span class="lab">Okay</span></div>
+        <div class="face" data-s="4" onclick="pickCheckinFace(this)">😣<span class="lab">Rough</span></div>
+        <div class="face" data-s="5" onclick="pickCheckinFace(this)">😖<span class="lab">Hard</span></div>
+      </div>
+    </div>
+    <div class="footnav">
+      <button class="btn btn-primary" onclick="go('home')">Save check-in ✓</button>
+    </div>
   </section>
 
   <!-- MED ENTRY SHEET -->
@@ -863,7 +947,43 @@
   function logNext(){ if(step<STEPS.length-1){step++;renderStep();} else { go('saved'); setTimeout(function(){ resView('try');go('resources'); }, 1800); } }
   function logBack(){ if(step>0){step--;renderStep();} else { go('home'); } }
 
+  // ---- Daily check-in ----
+  var _sleepH=7,_sleepM=0;
+  function adjSleep(unit,delta){
+    if(unit==='h') _sleepH=Math.max(0,Math.min(23,_sleepH+delta));
+    else _sleepM=Math.max(0,Math.min(59,_sleepM+delta));
+    var dh=document.getElementById('sleepH');if(dh)dh.textContent=_sleepH;
+    var dm=document.getElementById('sleepM');if(dm)dm.textContent=String(_sleepM).padStart(2,'0');
+  }
+  var _exH=0,_exM=0;
+  function adjEx(unit,delta){
+    if(unit==='h') _exH=Math.max(0,Math.min(23,_exH+delta));
+    else _exM=Math.max(0,Math.min(59,_exM+delta));
+    var dh=document.getElementById('exH');if(dh)dh.textContent=_exH;
+    var dm=document.getElementById('exM');if(dm)dm.textContent=String(_exM).padStart(2,'0');
+  }
+  function toggleAllDay(el){
+    el.classList.toggle('on');
+    var wrap=document.getElementById('prosSliderWrap');
+    var on=el.classList.contains('on');
+    wrap.style.opacity=on?'.35':'1';
+    document.getElementById('prosSlider').disabled=on;
+    document.getElementById('prosVal').textContent=on?'All day':document.getElementById('prosSlider').value+' hrs';
+  }
+  function updateProsLabel(){
+    var v=+document.getElementById('prosSlider').value;
+    document.getElementById('prosVal').textContent=v+' hr'+(v===1?'':'s');
+  }
+  function pickCheckinFace(el){
+    el.closest('.faces').querySelectorAll('.face').forEach(function(f){f.classList.remove('sel');});
+    el.classList.add('sel');
+  }
+
   // boot
+  (function(){
+    var h=new Date().getHours(),el=document.getElementById('welcomeGreet');
+    if(el) el.textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+' 👋';
+  })();
   syncTabs('home');
   go('splash');
   setTimeout(()=>{ if(document.getElementById('splash').classList.contains('active')) go('onboarding'); }, 2200);
