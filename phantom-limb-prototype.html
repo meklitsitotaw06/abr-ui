@@ -337,8 +337,8 @@
           <div class="limbcard">
             <label class="flab">Side</label>
             <div class="limb-side">
-              <button class="side-btn sel" data-side="right" onclick="pickSide(this)">🦵 Right</button>
               <button class="side-btn" data-side="left" onclick="pickSide(this)">🦵 Left</button>
+              <button class="side-btn sel" data-side="right" onclick="pickSide(this)">🦵 Right</button>
             </div>
             <label class="flab">Amputation level</label>
             <select><option>Below knee (transtibial)</option><option>Above knee (transfemoral)</option><option>Through knee</option><option>Partial foot</option><option>Ankle (Syme's)</option><option>Hip disarticulation</option></select>
@@ -367,10 +367,14 @@
         <span class="logmain-tx"><b>Log pain right now</b><i>In pain? Capture it in under a minute.</i></span>
       </button>
       <div class="daysline">🎉 <b>12 days</b> since your last episode</div>
-      <div class="card" onclick="go('checkin')" style="cursor:pointer">
-        <div class="row" style="border:none;padding:6px 0;align-items:center">
-          <div><div class="t">How's today going?</div><div class="s">Log sleep, activity &amp; mood</div></div>
-          <span class="chev">›</span>
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px">How are you feeling today?</div>
+        <div class="faces" style="margin-bottom:28px">
+          <div class="face" data-s="1" onclick="openCheckinWithMood(this)">😀<span class="lab">Great</span></div>
+          <div class="face" data-s="2" onclick="openCheckinWithMood(this)">🙂<span class="lab">Good</span></div>
+          <div class="face" data-s="3" onclick="openCheckinWithMood(this)">😐<span class="lab">Okay</span></div>
+          <div class="face" data-s="4" onclick="openCheckinWithMood(this)">😣<span class="lab">Rough</span></div>
+          <div class="face" data-s="5" onclick="openCheckinWithMood(this)">😖<span class="lab">Hard</span></div>
         </div>
       </div>
       <div class="sectlabel">Recent episodes</div>
@@ -389,10 +393,8 @@
     <div class="steps" id="logsteps"></div>
     <div class="scroll" id="logbody"></div>
     <div class="footnav" style="flex-direction:column;gap:8px">
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-lightblue" id="logsave" onclick="saveNow()">Quick save</button>
-        <button class="btn btn-primary" id="lognext" onclick="logNext()">Continue →</button>
-      </div>
+      <button class="btn btn-ghost" id="logsave" onclick="saveNow()" style="width:auto;align-self:center;padding:11px 28px;font-size:15px">Continue later</button>
+      <button class="btn btn-primary" id="lognext" onclick="logNext()">Next →</button>
     </div>
   </section>
 
@@ -542,81 +544,87 @@
 
   <!-- DAILY CHECK-IN -->
   <section class="screen" id="checkin">
-    <div class="nav" style="padding:6px 20px 4px"><button class="back" onclick="go('home')">‹ Home</button></div>
+    <div class="nav" style="padding:6px 20px 4px">
+      <button class="back" onclick="checkinBack()">‹ Back</button>
+      <span id="checkinStep" style="font-size:13px;color:var(--muted);font-weight:600">1 of 2</span>
+      <span style="width:48px"></span>
+    </div>
+    <div class="steps" id="checkinBar" style="padding:0 20px 12px"><i class="done"></i><i></i></div>
     <div class="scroll">
-      <div class="stepq">Tell us about<br>your day</div>
 
-      <div class="sectlabel">Sleep last night</div>
-      <div class="dur-picker">
-        <div class="dur-unit">
-          <button class="dur-btn" onclick="adjSleep('h',-1)">−</button>
-          <div class="dur-display" id="sleepH">7</div>
-          <button class="dur-btn" onclick="adjSleep('h',1)">＋</button>
-          <span class="dur-lbl">hrs</span>
-        </div>
-        <div class="dur-sep"></div>
-        <div class="dur-unit">
-          <button class="dur-btn" onclick="adjSleep('m',-1)">−</button>
-          <div class="dur-display" id="sleepM">00</div>
-          <button class="dur-btn" onclick="adjSleep('m',1)">＋</button>
-          <span class="dur-lbl">min</span>
-        </div>
-      </div>
+      <!-- Page 1: Sleep + Prosthetic -->
+      <div id="checkinPage1">
+        <div class="stepq">Tell us about your day</div>
 
-      <div class="sectlabel">Prosthetic wear today</div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="row" style="padding:8px 0">
-          <div class="t">All day</div>
-          <div class="toggle" id="allDayToggle" onclick="toggleAllDay(this)"></div>
+        <div class="sectlabel">Sleep last night</div>
+        <div class="dur-picker">
+          <div class="dur-unit">
+            <button class="dur-btn" onclick="adjSleep('h',-1)">−</button>
+            <div class="dur-display" id="sleepH">7</div>
+            <button class="dur-btn" onclick="adjSleep('h',1)">＋</button>
+            <span class="dur-lbl">hrs</span>
+          </div>
+          <div class="dur-sep"></div>
+          <div class="dur-unit">
+            <button class="dur-btn" onclick="adjSleep('m',-1)">−</button>
+            <div class="dur-display" id="sleepM">00</div>
+            <button class="dur-btn" onclick="adjSleep('m',1)">＋</button>
+            <span class="dur-lbl">min</span>
+          </div>
         </div>
-        <div id="prosSliderWrap" style="padding:4px 0 6px">
-          <input type="range" id="prosSlider" min="0" max="12" value="8" oninput="updateProsLabel()" />
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-            <span style="font-size:11px;color:var(--muted);font-weight:600">0 hrs</span>
-            <span id="prosVal" style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--ink)">8 hrs</span>
-            <span style="font-size:11px;color:var(--muted);font-weight:600">12 hrs</span>
+
+        <div class="sectlabel">Prosthetic wear today</div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="row" style="padding:8px 0">
+            <div class="t">All day</div>
+            <div class="toggle" id="allDayToggle" onclick="toggleAllDay(this)"></div>
+          </div>
+          <div id="prosSliderWrap" style="padding:4px 0 6px">
+            <input type="range" id="prosSlider" min="0" max="12" value="8" oninput="updateProsLabel()" />
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+              <span style="font-size:11px;color:var(--muted);font-weight:600">0 hrs</span>
+              <span id="prosVal" style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--ink)">8 hrs</span>
+              <span style="font-size:11px;color:var(--muted);font-weight:600">12 hrs</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="sectlabel">Exercise</div>
-      <p class="stephint" style="margin-bottom:10px">What type? Pick all that apply.</p>
-      <div class="chips" style="margin-bottom:14px">
-        <span class="chip" onclick="this.classList.toggle('sel')">🚶 Walk</span>
-        <span class="chip" onclick="this.classList.toggle('sel')">🏃 Run</span>
-        <span class="chip" onclick="this.classList.toggle('sel')">🏊 Swim</span>
-        <span class="chip" onclick="this.classList.toggle('sel')">🚴 Bike</span>
-        <span class="chip" onclick="this.classList.toggle('sel')">🏋️ Gym</span>
-        <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
-      </div>
-      <div class="sectlabel" style="margin-top:0">Exercise duration</div>
-      <div class="dur-picker">
-        <div class="dur-unit">
-          <button class="dur-btn" onclick="adjEx('h',-1)">−</button>
-          <div class="dur-display" id="exH">0</div>
-          <button class="dur-btn" onclick="adjEx('h',1)">＋</button>
-          <span class="dur-lbl">hrs</span>
+      <!-- Page 2: Exercise -->
+      <div id="checkinPage2" style="display:none">
+        <div class="stepq">Tell us about your day</div>
+
+        <div class="sectlabel">Exercise</div>
+        <p class="stephint" style="margin-bottom:10px">What type? Pick all that apply.</p>
+        <div class="chips" style="margin-bottom:14px">
+          <span class="chip" onclick="this.classList.toggle('sel')">🚶 Walk</span>
+          <span class="chip" onclick="this.classList.toggle('sel')">🏃 Run</span>
+          <span class="chip" onclick="this.classList.toggle('sel')">🏊 Swim</span>
+          <span class="chip" onclick="this.classList.toggle('sel')">🚴 Bike</span>
+          <span class="chip" onclick="this.classList.toggle('sel')">🏋️ Gym</span>
+          <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
         </div>
-        <div class="dur-sep"></div>
-        <div class="dur-unit">
-          <button class="dur-btn" onclick="adjEx('m',-1)">−</button>
-          <div class="dur-display" id="exM">00</div>
-          <button class="dur-btn" onclick="adjEx('m',1)">＋</button>
-          <span class="dur-lbl">min</span>
+        <div class="sectlabel" style="margin-top:0">Exercise duration</div>
+        <div class="dur-picker">
+          <div class="dur-unit">
+            <button class="dur-btn" onclick="adjEx('h',-1)">−</button>
+            <div class="dur-display" id="exH">0</div>
+            <button class="dur-btn" onclick="adjEx('h',1)">＋</button>
+            <span class="dur-lbl">hrs</span>
+          </div>
+          <div class="dur-sep"></div>
+          <div class="dur-unit">
+            <button class="dur-btn" onclick="adjEx('m',-1)">−</button>
+            <div class="dur-display" id="exM">00</div>
+            <button class="dur-btn" onclick="adjEx('m',1)">＋</button>
+            <span class="dur-lbl">min</span>
+          </div>
         </div>
       </div>
 
-      <div class="sectlabel">Overall mood</div>
-      <div class="faces" style="margin-bottom:24px">
-        <div class="face" data-s="1" onclick="pickCheckinFace(this)">😀<span class="lab">Great</span></div>
-        <div class="face" data-s="2" onclick="pickCheckinFace(this)">🙂<span class="lab">Good</span></div>
-        <div class="face" data-s="3" onclick="pickCheckinFace(this)">😐<span class="lab">Okay</span></div>
-        <div class="face" data-s="4" onclick="pickCheckinFace(this)">😣<span class="lab">Rough</span></div>
-        <div class="face" data-s="5" onclick="pickCheckinFace(this)">😖<span class="lab">Hard</span></div>
-      </div>
     </div>
     <div class="footnav">
-      <button class="btn btn-primary" onclick="go('home')">Save check-in ✓</button>
+      <button class="btn btn-primary" id="checkinNextBtn" onclick="checkinNext()">Next →</button>
     </div>
   </section>
 
@@ -796,8 +804,8 @@
     c.innerHTML='<button class="limb-x" onclick="removeLimb(this)">✕</button>'
       +'<label class="flab">Side</label>'
       +'<div class="limb-side">'
-      +'<button class="side-btn'+(newSide==='right'?' sel':'')+'" data-side="right" onclick="pickSide(this)">🦵 Right</button>'
       +'<button class="side-btn'+(newSide==='left'?' sel':'')+'" data-side="left" onclick="pickSide(this)">🦵 Left</button>'
+      +'<button class="side-btn'+(newSide==='right'?' sel':'')+'" data-side="right" onclick="pickSide(this)">🦵 Right</button>'
       +'</div>'
       +'<label class="flab">Amputation level</label><select>'+LEVELS+'</select>'
       +'<label class="flab">When did it happen?</label><input type="month">';
@@ -932,7 +940,7 @@
     var bar=document.getElementById('logsteps');
     if(step===0){bar.innerHTML='';bar.style.display='none';}
     else{bar.style.display='flex';bar.innerHTML=STEPS.slice(1).map((_,i)=>'<i class="'+(i<step?'done':'')+'"></i>').join('');}
-    document.getElementById('lognext').textContent=step===STEPS.length-1?'Save episode ✓':'Continue →';
+    document.getElementById('lognext').textContent=step===STEPS.length-1?'Save episode ✓':'Next →';
     if(step===1){_durH=0;_durM=30;}
   }
   var _durH=0,_durM=30;
@@ -975,9 +983,29 @@
     var v=+document.getElementById('prosSlider').value;
     document.getElementById('prosVal').textContent=v+' hr'+(v===1?'':'s');
   }
-  function pickCheckinFace(el){
+  var _checkinPage=1;
+  function openCheckinWithMood(el){
     el.closest('.faces').querySelectorAll('.face').forEach(function(f){f.classList.remove('sel');});
     el.classList.add('sel');
+    checkinGotoPage(1);
+    go('checkin');
+  }
+  function checkinBack(){
+    if(_checkinPage===1){ go('home'); } else { checkinGotoPage(1); }
+  }
+  function checkinGotoPage(n){
+    _checkinPage=n;
+    document.getElementById('checkinPage1').style.display=n===1?'block':'none';
+    document.getElementById('checkinPage2').style.display=n===2?'block':'none';
+    document.getElementById('checkinStep').textContent=n+' of 2';
+    var bar=document.getElementById('checkinBar');
+    bar.children[0].className='done';
+    bar.children[1].className=n===2?'done':'';
+    document.getElementById('checkinNextBtn').textContent=n===2?'Save check-in ✓':'Next →';
+    var sc=document.querySelector('#checkin .scroll');if(sc)sc.scrollTop=0;
+  }
+  function checkinNext(){
+    if(_checkinPage===1){ checkinGotoPage(2); } else { go('home'); }
   }
 
   // boot
