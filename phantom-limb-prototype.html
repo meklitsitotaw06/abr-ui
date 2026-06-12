@@ -242,7 +242,7 @@
   @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   .splash-mark .draw{stroke-dasharray:210;stroke-dashoffset:210;animation:draw 1.1s .35s cubic-bezier(.6,0,.2,1) forwards}
   @keyframes draw{to{stroke-dashoffset:0}}
-  #saved{background:linear-gradient(165deg,var(--teal-700) 0%,var(--teal-900) 30%,var(--navy) 78%);color:#fff;align-items:center;justify-content:center;padding-top:50px}
+  #saved,#checkin-saved{background:linear-gradient(165deg,var(--teal-700) 0%,var(--teal-900) 30%,var(--navy) 78%);color:#fff;align-items:center;justify-content:center;padding-top:50px}
   .savedcheck{width:104px;height:104px;border-radius:50%;background:rgba(94,234,212,.18);display:grid;place-items:center;font-size:54px;color:#5eead4;margin-bottom:24px;animation:popIn .55s cubic-bezier(.2,1.35,.4,1) both}
   @keyframes popIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
   .ob h1{font-size:30px;font-weight:800;letter-spacing:-.6px;line-height:1.15;margin:0 0 12px}
@@ -314,6 +314,15 @@
     </div>
   </section>
 
+  <!-- CHECK-IN SAVED -->
+  <section class="screen" id="checkin-saved">
+    <div class="splashwrap">
+      <div class="savedcheck">✓</div>
+      <div class="splash-word">Check-in saved</div>
+      <div class="splash-tag">Consistency makes a difference. Keep it up!</div>
+    </div>
+  </section>
+
   <!-- ① ONBOARDING -->
   <section class="screen ob" id="onboarding">
     <div class="scroll">
@@ -366,7 +375,7 @@
         <span class="logmain-ic">＋</span>
         <span class="logmain-tx"><b>Log pain right now</b><i>In pain? Capture it in under a minute.</i></span>
       </button>
-      <div class="daysline">🎉 <b>12 days</b> since your last episode</div>
+
       <div class="card" style="margin-bottom:14px">
         <div style="font-weight:700;font-size:15px;margin-bottom:14px">How are you feeling today?</div>
         <div class="faces" style="margin-bottom:28px">
@@ -692,7 +701,7 @@
     document.getElementById(id).classList.add('active');
     document.querySelectorAll('.phone .scroll').forEach(s=>s.scrollTop=0);
     var h=document.getElementById('appHeader');
-    if(h){ h.style.display = (id==='splash'||id==='saved') ? 'none' : 'flex'; h.classList.toggle('ondark', false); }
+    if(h){ h.style.display = (id==='splash'||id==='saved'||id==='checkin-saved') ? 'none' : 'flex'; h.classList.toggle('ondark', false); }
     if(id==='onboarding') obStep(1);
     syncTabs(id);
   }
@@ -864,7 +873,8 @@
         <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
       </div>
       <div class="sectlabel">How long has it lasted?</div>
-      <div class="dur-picker">
+      <span class="chip" id="stillGoingChip" onclick="toggleStillGoing(this)" style="margin-bottom:10px;display:inline-block">Still going on</span>
+      <div class="dur-picker" id="durPicker">
         <div class="dur-unit">
           <button class="dur-btn" onclick="adjDur('h',-1)">−</button>
           <div class="dur-display" id="durH">0</div>
@@ -878,11 +888,6 @@
           <button class="dur-btn" onclick="adjDur('m',1)">＋</button>
           <span class="dur-lbl">min</span>
         </div>
-      </div>
-      <div class="sectlabel" style="margin-top:0">How did it come on?</div>
-      <div class="chipgrid">
-        <span class="chip sel" onclick="oneChip(this)">Sudden</span>
-        <span class="chip" onclick="oneChip(this)">Built up slowly</span>
       </div>`},
     // Page 2 — context
     {q:'What else is going on?', html:`
@@ -941,13 +946,22 @@
     if(step===0){bar.innerHTML='';bar.style.display='none';}
     else{bar.style.display='flex';bar.innerHTML=STEPS.slice(1).map((_,i)=>'<i class="'+(i<step?'done':'')+'"></i>').join('');}
     document.getElementById('lognext').textContent=step===STEPS.length-1?'Save episode ✓':'Next →';
-    if(step===1){_durH=0;_durM=30;}
+    if(step===1){_durH=0;_durM=30;_stillGoing=false;}
   }
-  var _durH=0,_durM=30;
+  var _durH=0,_durM=30,_stillGoing=false;
+  function toggleStillGoing(el){
+    _stillGoing=!_stillGoing;
+    el.classList.toggle('sel',_stillGoing);
+    var picker=document.getElementById('durPicker');
+    if(picker){
+      picker.style.opacity=_stillGoing?'.35':'1';
+      picker.querySelectorAll('.dur-btn').forEach(function(b){b.disabled=_stillGoing;});
+    }
+  }
   function adjDur(unit,delta){
     if(unit==='h') _durH=Math.max(0,Math.min(23,_durH+delta));
-    else _durM=Math.max(0,Math.min(59,_durM+delta));
-    if(_durH===0&&_durM===0){if(unit==='m')_durM=1;else _durM=5;}
+    else _durM=Math.max(0,Math.min(55,_durM+delta*5));
+    if(_durH===0&&_durM===0){if(unit==='m')_durM=5;else _durM=5;}
     var dh=document.getElementById('durH');if(dh)dh.textContent=_durH;
     var dm=document.getElementById('durM');if(dm)dm.textContent=String(_durM).padStart(2,'0');
   }
@@ -960,14 +974,14 @@
   var _sleepH=7,_sleepM=0;
   function adjSleep(unit,delta){
     if(unit==='h') _sleepH=Math.max(0,Math.min(23,_sleepH+delta));
-    else _sleepM=Math.max(0,Math.min(59,_sleepM+delta));
+    else _sleepM=Math.max(0,Math.min(55,_sleepM+delta*5));
     var dh=document.getElementById('sleepH');if(dh)dh.textContent=_sleepH;
     var dm=document.getElementById('sleepM');if(dm)dm.textContent=String(_sleepM).padStart(2,'0');
   }
   var _exH=0,_exM=0;
   function adjEx(unit,delta){
     if(unit==='h') _exH=Math.max(0,Math.min(23,_exH+delta));
-    else _exM=Math.max(0,Math.min(59,_exM+delta));
+    else _exM=Math.max(0,Math.min(55,_exM+delta*5));
     var dh=document.getElementById('exH');if(dh)dh.textContent=_exH;
     var dm=document.getElementById('exM');if(dm)dm.textContent=String(_exM).padStart(2,'0');
   }
@@ -1005,7 +1019,7 @@
     var sc=document.querySelector('#checkin .scroll');if(sc)sc.scrollTop=0;
   }
   function checkinNext(){
-    if(_checkinPage===1){ checkinGotoPage(2); } else { go('home'); }
+    if(_checkinPage===1){ checkinGotoPage(2); } else { go('checkin-saved'); setTimeout(function(){ go('home'); }, 1800); }
   }
 
   // boot
