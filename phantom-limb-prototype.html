@@ -269,6 +269,17 @@
   .sheet-row{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;border-bottom:1px solid #ececf0;font-size:15px;color:#111;cursor:pointer}
   .sheet-row:last-child{border-bottom:none}
   .sheet-cancel{width:100%;background:#fff;border:none;border-radius:14px;padding:16px;font-family:inherit;font-weight:700;font-size:16px;color:#0a84ff;cursor:pointer}
+
+  /* treatment tried / not-tried rows */
+  .tryrow{border-bottom:1px solid var(--line);padding:13px 0}
+  .tryrow:last-child{border-bottom:none}
+  .tryrow-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .tryrow-head .t{font-weight:600;font-size:15px;flex:1}
+  .tried-btn{flex:0 0 auto;border:2px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-family:inherit;font-weight:700;font-size:12.5px;padding:7px 13px;cursor:pointer;transition:.12s;white-space:nowrap}
+  .tryrow.tried .tried-btn{background:var(--teal-700);color:#fff;border-color:var(--teal-700)}
+  .tryrow-rate{display:none;padding-top:10px}
+  .tryrow.tried .tryrow-rate{display:block}
+  .tryrow-rate-lbl{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
 </style>
 </head>
 <body>
@@ -629,6 +640,8 @@
             <span class="dur-lbl">min</span>
           </div>
         </div>
+        <div class="sectlabel">Additional notes</div>
+        <textarea placeholder="Anything else about your day? (optional)" style="width:100%;padding:14px;border-radius:14px;border:2px solid var(--line);font-family:inherit;font-size:15px;font-weight:500;background:#fff;color:var(--ink);resize:none;min-height:90px;display:block"></textarea>
       </div>
 
     </div>
@@ -902,27 +915,57 @@
       </div>`},
     // Page 3 — treatments + medications
     {q:'What did you try?', html:`
-      <p class="stephint">Tap what you tried, then how much it helped.</p>
+      <p class="stephint">Tap "Tried it" next to anything you attempted, then rate how much it helped. Leave the rest untouched.</p>
       <div class="card" style="margin:0 0 14px">
-        <div class="tryitem">
-          <div class="t">🪞 Mirror therapy</div>
-          <div class="chipgrid3"><span class="chip sel" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">No</span></div>
+        <div class="tryrow tried" id="tr0">
+          <div class="tryrow-head">
+            <span class="t">🪞 Mirror therapy</span>
+            <button class="tried-btn" onclick="toggleTried('tr0')">Tried it</button>
+          </div>
+          <div class="tryrow-rate">
+            <div class="tryrow-rate-lbl">How much did it help?</div>
+            <div class="chipgrid3"><span class="chip sel" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+          </div>
         </div>
-        <div class="tryitem">
-          <div class="t">✋ Desensitization</div>
-          <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip sel" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">No</span></div>
+        <div class="tryrow tried" id="tr1">
+          <div class="tryrow-head">
+            <span class="t">✋ Desensitization</span>
+            <button class="tried-btn" onclick="toggleTried('tr1')">Tried it</button>
+          </div>
+          <div class="tryrow-rate">
+            <div class="tryrow-rate-lbl">How much did it help?</div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip sel" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+          </div>
         </div>
-        <div class="tryitem">
-          <div class="t">💆 Manual manipulation / massage</div>
-          <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">No</span></div>
+        <div class="tryrow" id="tr2">
+          <div class="tryrow-head">
+            <span class="t">💆 Massage / manipulation</span>
+            <button class="tried-btn" onclick="toggleTried('tr2')">Tried it</button>
+          </div>
+          <div class="tryrow-rate">
+            <div class="tryrow-rate-lbl">How much did it help?</div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+          </div>
         </div>
-        <div class="tryitem">
-          <div class="t">🦿 Prosthetic fit adjustments</div>
-          <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">No</span></div>
+        <div class="tryrow" id="tr3">
+          <div class="tryrow-head">
+            <span class="t">🦿 Prosthetic fit adjustment</span>
+            <button class="tried-btn" onclick="toggleTried('tr3')">Tried it</button>
+          </div>
+          <div class="tryrow-rate">
+            <div class="tryrow-rate-lbl">How much did it help?</div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+          </div>
         </div>
-        <div class="tryitem">
-          <div class="t">💊 Medication</div>
-          <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">No</span></div>
+        <div class="tryrow" id="tr4">
+          <div class="tryrow-head">
+            <span class="t">💊 Medication</span>
+            <button class="tried-btn" onclick="toggleTried('tr4')">Tried it</button>
+          </div>
+          <div class="tryrow-rate">
+            <div class="tryrow-rate-lbl">How much did it help?</div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+          </div>
         </div>
       </div>
       <div class="sectlabel">Medications taken</div>
@@ -937,6 +980,11 @@
       <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:14px">🔒 Stored privately on your phone unless you share it.</p>`}
   ];
   function oneChip(el){el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+  function toggleTried(id){
+    var row=document.getElementById(id);
+    row.classList.toggle('tried');
+    if(!row.classList.contains('tried')) row.querySelectorAll('.chip').forEach(function(c){c.classList.remove('sel');});
+  }
   function renderStep(){
     const s=STEPS[step];
     const html=step===0?buildStep0Html():s.html;
@@ -946,6 +994,7 @@
     if(step===0){bar.innerHTML='';bar.style.display='none';}
     else{bar.style.display='flex';bar.innerHTML=STEPS.slice(1).map((_,i)=>'<i class="'+(i<step?'done':'')+'"></i>').join('');}
     document.getElementById('lognext').textContent=step===STEPS.length-1?'Save episode ✓':'Next →';
+    document.getElementById('logsave').style.display=step===STEPS.length-1?'none':'';
     if(step===1){_durH=0;_durM=30;_stillGoing=false;}
   }
   var _durH=0,_durM=30,_stillGoing=false;
