@@ -338,8 +338,13 @@
 
   <!-- ① ONBOARDING -->
   <section class="screen ob" id="onboarding">
+    <div class="nav" style="padding:6px 20px 0">
+      <button class="back" id="obBack" style="visibility:hidden" onclick="obStep(1)">‹ Back</button>
+      <span style="font-size:13px;color:var(--muted);font-weight:600" id="obStepCount">1 of 2</span>
+      <span style="width:48px"></span>
+    </div>
+    <div class="steps" id="obBar" style="padding:0 20px 12px"><i class="done"></i><i></i></div>
     <div class="scroll">
-      <div class="steps" id="obBar" style="padding:0 0 18px"><i class="done"></i><i></i></div>
       <div id="obStep1">
         <h1>About you</h1>
         <div class="sectlabel">Who's using the app?</div>
@@ -373,7 +378,6 @@
     </div>
     <div class="footnav" style="flex-direction:column;gap:8px">
       <button class="btn btn-primary" id="obNext" onclick="obNext()">Continue →</button>
-      <button class="skiplink" id="obBack" style="display:none;margin:0" onclick="obStep(1)">‹ Back</button>
     </div>
   </section>
 
@@ -772,7 +776,8 @@
     document.getElementById('obStep2').style.display = n===2?'block':'none';
     document.getElementById('obBar').children[1].className = n===2?'done':'';
     document.getElementById('obNext').textContent = 'Continue →';
-    document.getElementById('obBack').style.display = n===2?'block':'none';
+    document.getElementById('obBack').style.visibility = n===2?'visible':'hidden';
+    document.getElementById('obStepCount').textContent = n+' of 2';
     var sc=document.querySelector('#onboarding .scroll'); if(sc) sc.scrollTop=0;
     window._obStep=n;
   }
