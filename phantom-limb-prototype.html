@@ -42,6 +42,7 @@
   .screen{position:absolute;inset:0;display:none;flex-direction:column;padding-top:96px}
   .screen.active{display:flex}
   .scroll{flex:1;overflow-y:auto;padding:8px 20px 110px}
+  #log .scroll{padding-bottom:160px}
   .scroll::-webkit-scrollbar{width:0}
 
   /* nav header */
@@ -290,11 +291,12 @@
   <button onclick="go('onboarding')">① Onboarding</button>
   <button onclick="go('home')">② Home / Dashboard</button>
   <button onclick="startLog()">③ Log episode (flow)</button>
+  <button onclick="go('saved')">④ Episode saved</button>
   <button onclick="go('insights')">⑤ Insights</button>
   <button onclick="go('day')">⑥ Day detail</button>
   <button onclick="go('resources')">⑦ Resources</button>
-  <button onclick="go('profile')">⑨ Profile</button>
-  <button onclick="go('checkin')">✓ Daily check-in</button>
+  <button onclick="go('profile')">⑧ Profile</button>
+  <button onclick="go('checkin')">⑨ Daily check-in</button>
 </div>
 
 <div class="phone">
@@ -357,7 +359,7 @@
           <div class="limbcard">
             <label class="flab">Side</label>
             <div class="limb-side">
-              <button class="side-btn" data-side="left" onclick="pickSide(this)">🦵 Left</button>
+              <button class="side-btn" data-side="left" onclick="pickSide(this)"><span class="emoji flip">🦵</span> Left</button>
               <button class="side-btn sel" data-side="right" onclick="pickSide(this)">🦵 Right</button>
             </div>
             <label class="flab">Amputation level</label>
@@ -412,9 +414,9 @@
     <div class="nav"><button class="back" onclick="logBack()">‹ Back</button><span class="sub" id="logcount">Step 1 of 6</span><span style="width:48px"></span></div>
     <div class="steps" id="logsteps"></div>
     <div class="scroll" id="logbody"></div>
-    <div class="footnav" style="flex-direction:column;gap:8px">
-      <button class="btn btn-ghost" id="logsave" onclick="saveNow()" style="width:auto;align-self:center;padding:11px 28px;font-size:15px">Continue later</button>
+    <div class="footnav" style="flex-direction:column;gap:4px;background:var(--bg);border-top:1px solid var(--line)">
       <button class="btn btn-primary" id="lognext" onclick="logNext()">Next →</button>
+      <button class="btn" id="logsave" onclick="saveNow()" style="background:var(--bg);color:var(--muted);font-size:14px;padding:10px 17px">Continue later</button>
     </div>
   </section>
 
@@ -546,7 +548,7 @@
         <div class="row"><div class="t">🙋 Logging for myself</div><span class="chev" style="color:var(--teal-700);font-weight:700">Change</span></div>
         <div class="row"><div class="t">🎂 Amputee's age</div><div class="s">54</div></div>
       </div>
-      <div class="sectlabel">My limbs</div>
+      <div class="sectlabel">Limb details</div>
       <div class="card">
         <div class="row" style="border:none"><div><div class="t">🦵 Right · below knee</div><div class="s">Since June 2019</div></div><span class="chev">›</span></div>
       </div>
@@ -556,7 +558,14 @@
       <button class="btn btn-ghost" onclick="addMed('medListProfile')">＋ Add medication</button>
       <div class="sectlabel">Settings</div>
       <div class="card">
-        <div class="row"><div class="t">Daily check-in reminder</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="row" style="border:none">
+          <div class="t">Daily check-in reminder</div>
+          <div class="toggle" id="reminderToggle" onclick="toggleReminder(this)"></div>
+        </div>
+        <div class="row" id="reminderTimeRow" style="display:none;border:none">
+          <div><div class="t" style="font-size:14px;color:var(--muted)">Remind me at</div></div>
+          <input type="time" value="08:00" style="width:auto;padding:8px 12px;border-radius:10px;border:2px solid var(--line);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--teal-50)" />
+        </div>
       </div>
     </div>
     <div class="tabbar" id="tabs9"></div>
@@ -762,7 +771,7 @@
     document.getElementById('obStep1').style.display = n===1?'block':'none';
     document.getElementById('obStep2').style.display = n===2?'block':'none';
     document.getElementById('obBar').children[1].className = n===2?'done':'';
-    document.getElementById('obNext').textContent = n===2?'Get started →':'Continue →';
+    document.getElementById('obNext').textContent = 'Continue →';
     document.getElementById('obBack').style.display = n===2?'block':'none';
     var sc=document.querySelector('#onboarding .scroll'); if(sc) sc.scrollTop=0;
     window._obStep=n;
@@ -826,7 +835,7 @@
     c.innerHTML='<button class="limb-x" onclick="removeLimb(this)">✕</button>'
       +'<label class="flab">Side</label>'
       +'<div class="limb-side">'
-      +'<button class="side-btn'+(newSide==='left'?' sel':'')+'" data-side="left" onclick="pickSide(this)">🦵 Left</button>'
+      +'<button class="side-btn'+(newSide==='left'?' sel':'')+'" data-side="left" onclick="pickSide(this)"><span class="emoji flip">🦵</span> Left</button>'
       +'<button class="side-btn'+(newSide==='right'?' sel':'')+'" data-side="right" onclick="pickSide(this)">🦵 Right</button>'
       +'</div>'
       +'<label class="flab">Amputation level</label><select>'+LEVELS+'</select>'
@@ -864,7 +873,7 @@
     return s+'<div class="faces" style="margin-top:30px">'
       +'<div class="face" data-s="2" onclick="pickFace(this)">🙂<span class="lab">Mild</span></div>'
       +'<div class="face" data-s="3" onclick="pickFace(this)">😐<span class="lab">Medium</span></div>'
-      +'<div class="face sel" data-s="4" onclick="pickFace(this)">😣<span class="lab">Bad</span></div>'
+      +'<div class="face" data-s="4" onclick="pickFace(this)">😣<span class="lab">Bad</span></div>'
       +'<div class="face" data-s="5" onclick="pickFace(this)">😖<span class="lab">Severe</span></div>'
       +'</div>';
   }
@@ -886,21 +895,13 @@
         <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
       </div>
       <div class="sectlabel">How long has it lasted?</div>
-      <span class="chip" id="stillGoingChip" onclick="toggleStillGoing(this)" style="margin-bottom:10px;display:inline-block">Still going on</span>
-      <div class="dur-picker" id="durPicker">
-        <div class="dur-unit">
-          <button class="dur-btn" onclick="adjDur('h',-1)">−</button>
-          <div class="dur-display" id="durH">0</div>
-          <button class="dur-btn" onclick="adjDur('h',1)">＋</button>
-          <span class="dur-lbl">hrs</span>
-        </div>
-        <div class="dur-sep"></div>
-        <div class="dur-unit">
-          <button class="dur-btn" onclick="adjDur('m',-1)">−</button>
-          <div class="dur-display" id="durM">30</div>
-          <button class="dur-btn" onclick="adjDur('m',1)">＋</button>
-          <span class="dur-lbl">min</span>
-        </div>
+      <div class="chipgrid">
+        <span class="chip" onclick="oneChip(this)">Under 15 min</span>
+        <span class="chip" onclick="oneChip(this)">15–30 min</span>
+        <span class="chip" onclick="oneChip(this)">30–60 min</span>
+        <span class="chip" onclick="oneChip(this)">1–3 hours</span>
+        <span class="chip" onclick="oneChip(this)">Over 3 hours</span>
+        <span class="chip" onclick="oneChip(this)">Still going</span>
       </div>`},
     // Page 2 — context
     {q:'What else is going on?', html:`
@@ -917,24 +918,24 @@
     {q:'What did you try?', html:`
       <p class="stephint">Tap "Tried it" next to anything you attempted, then rate how much it helped. Leave the rest untouched.</p>
       <div class="card" style="margin:0 0 14px">
-        <div class="tryrow tried" id="tr0">
+        <div class="tryrow" id="tr0">
           <div class="tryrow-head">
             <span class="t">🪞 Mirror therapy</span>
             <button class="tried-btn" onclick="toggleTried('tr0')">Tried it</button>
           </div>
           <div class="tryrow-rate">
             <div class="tryrow-rate-lbl">How much did it help?</div>
-            <div class="chipgrid3"><span class="chip sel" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
           </div>
         </div>
-        <div class="tryrow tried" id="tr1">
+        <div class="tryrow" id="tr1">
           <div class="tryrow-head">
             <span class="t">✋ Desensitization</span>
             <button class="tried-btn" onclick="toggleTried('tr1')">Tried it</button>
           </div>
           <div class="tryrow-rate">
             <div class="tryrow-rate-lbl">How much did it help?</div>
-            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip sel" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
           </div>
         </div>
         <div class="tryrow" id="tr2">
@@ -951,16 +952,6 @@
           <div class="tryrow-head">
             <span class="t">🦿 Prosthetic fit adjustment</span>
             <button class="tried-btn" onclick="toggleTried('tr3')">Tried it</button>
-          </div>
-          <div class="tryrow-rate">
-            <div class="tryrow-rate-lbl">How much did it help?</div>
-            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
-          </div>
-        </div>
-        <div class="tryrow" id="tr4">
-          <div class="tryrow-head">
-            <span class="t">💊 Medication</span>
-            <button class="tried-btn" onclick="toggleTried('tr4')">Tried it</button>
           </div>
           <div class="tryrow-rate">
             <div class="tryrow-rate-lbl">How much did it help?</div>
@@ -995,24 +986,6 @@
     else{bar.style.display='flex';bar.innerHTML=STEPS.slice(1).map((_,i)=>'<i class="'+(i<step?'done':'')+'"></i>').join('');}
     document.getElementById('lognext').textContent=step===STEPS.length-1?'Save episode ✓':'Next →';
     document.getElementById('logsave').style.display=step===STEPS.length-1?'none':'';
-    if(step===1){_durH=0;_durM=30;_stillGoing=false;}
-  }
-  var _durH=0,_durM=30,_stillGoing=false;
-  function toggleStillGoing(el){
-    _stillGoing=!_stillGoing;
-    el.classList.toggle('sel',_stillGoing);
-    var picker=document.getElementById('durPicker');
-    if(picker){
-      picker.style.opacity=_stillGoing?'.35':'1';
-      picker.querySelectorAll('.dur-btn').forEach(function(b){b.disabled=_stillGoing;});
-    }
-  }
-  function adjDur(unit,delta){
-    if(unit==='h') _durH=Math.max(0,Math.min(23,_durH+delta));
-    else _durM=Math.max(0,Math.min(55,_durM+delta*5));
-    if(_durH===0&&_durM===0){if(unit==='m')_durM=5;else _durM=5;}
-    var dh=document.getElementById('durH');if(dh)dh.textContent=_durH;
-    var dm=document.getElementById('durM');if(dm)dm.textContent=String(_durM).padStart(2,'0');
   }
   function saveNow(){go('saved');setTimeout(function(){resView('try');go('resources');},1800);}
   function startLog(){step=0;renderStep();go('log');}
@@ -1069,6 +1042,10 @@
   }
   function checkinNext(){
     if(_checkinPage===1){ checkinGotoPage(2); } else { go('checkin-saved'); setTimeout(function(){ go('home'); }, 1800); }
+  }
+  function toggleReminder(el){
+    el.classList.toggle('on');
+    document.getElementById('reminderTimeRow').style.display=el.classList.contains('on')?'':'none';
   }
 
   // boot
