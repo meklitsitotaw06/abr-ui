@@ -350,13 +350,15 @@
         <div class="sectlabel">Who's using the app?</div>
         <div class="selcard sel" onclick="pick(this)"><span class="emoji">🙋</span><div><div class="t">It's for me</div><div class="s">I'm the amputee tracking my own pain</div></div></div>
         <div class="selcard" onclick="pick(this)"><span class="emoji">🤝</span><div><div class="t">I'm a caretaker / family</div><div class="s">Logging on behalf of someone else</div></div></div>
-        <div class="sectlabel">Amputee's age</div>
-        <input type="text" inputmode="numeric" placeholder="Age of the person with the amputation" value="54" />
-        <div class="sectlabel">Medications for phantom pain</div>
+        <div class="sectlabel">Amputee's name</div>
+        <input type="text" id="amputeeName" placeholder="First name or nickname" value="Michael" />
+        <div class="sectlabel">Year of birth</div>
+        <input type="text" inputmode="numeric" placeholder="e.g. 1970" value="1971" />
+        <div class="sectlabel">Meds / supplements for phantom pain</div>
         <div class="medlist" id="medList">
-          <p class="med-empty">No medications added yet.</p>
+          <p class="med-empty">No meds / supplements added yet.</p>
         </div>
-        <button class="btn btn-ghost" onclick="addMed()">＋ Add medication</button>
+        <button class="btn btn-ghost" onclick="addMed()">＋ Add med / supplement</button>
       </div>
       <div id="obStep2" style="display:none">
         <h1>About the amputation</h1>
@@ -371,6 +373,16 @@
             <select><option>Below knee (transtibial)</option><option>Above knee (transfemoral)</option><option>Through knee</option><option>Partial foot</option><option>Ankle (Syme's)</option><option>Hip disarticulation</option></select>
             <label class="flab">When did it happen?</label>
             <input type="month" value="2019-06" />
+            <label class="flab">Cause of amputation</label>
+            <select>
+              <option value="">Select cause…</option>
+              <option selected>Trauma</option>
+              <option>Diabetes / vascular disease</option>
+              <option>Cancer</option>
+              <option>Infection</option>
+              <option>Congenital</option>
+              <option>Other</option>
+            </select>
           </div>
         </div>
         <button class="btn btn-ghost" id="addLimbBtn" onclick="addLimb()">＋ Add a second limb</button>
@@ -550,16 +562,17 @@
       <div class="sectlabel">About you</div>
       <div class="card">
         <div class="row"><div class="t">🙋 Logging for myself</div><span class="chev" style="color:var(--teal-700);font-weight:700">Change</span></div>
-        <div class="row"><div class="t">🎂 Amputee's age</div><div class="s">54</div></div>
+        <div class="row"><div class="t">👤 Amputee's name</div><div class="s">Michael</div></div>
+        <div class="row"><div class="t">🎂 Year of birth</div><div class="s">1971</div></div>
       </div>
       <div class="sectlabel">Limb details</div>
       <div class="card">
         <div class="row" style="border:none"><div><div class="t">🦵 Right · below knee</div><div class="s">Since June 2019</div></div><span class="chev">›</span></div>
       </div>
       <button class="btn btn-ghost" style="margin-bottom:4px">＋ Add a limb</button>
-      <div class="sectlabel">Medications for phantom pain</div>
-      <div class="medlist" id="medListProfile"><p class="med-empty">No medications added yet.</p></div>
-      <button class="btn btn-ghost" onclick="addMed('medListProfile')">＋ Add medication</button>
+      <div class="sectlabel">Meds / supplements for phantom pain</div>
+      <div class="medlist" id="medListProfile"><p class="med-empty">No meds / supplements added yet.</p></div>
+      <button class="btn btn-ghost" onclick="addMed('medListProfile')">＋ Add med / supplement</button>
       <div class="sectlabel">Settings</div>
       <div class="card">
         <div class="row" style="border:none">
@@ -627,9 +640,9 @@
       <div id="checkinPage2" style="display:none">
         <div class="stepq">Tell us about your day</div>
 
-        <div class="sectlabel">Exercise</div>
-        <p class="stephint" style="margin-bottom:10px">What type? Pick all that apply.</p>
-        <div class="chips" style="margin-bottom:14px">
+        <div class="sectlabel" style="margin-top:0">Exercise</div>
+        <p class="stephint" style="margin-bottom:12px">What type? Pick all that apply.</p>
+        <div class="chips" style="margin-bottom:18px">
           <span class="chip" onclick="this.classList.toggle('sel')">🚶 Walk</span>
           <span class="chip" onclick="this.classList.toggle('sel')">🏃 Run</span>
           <span class="chip" onclick="this.classList.toggle('sel')">🏊 Swim</span>
@@ -637,24 +650,29 @@
           <span class="chip" onclick="this.classList.toggle('sel')">🏋️ Gym</span>
           <span class="chip" onclick="this.classList.toggle('sel')">✏️ Other</span>
         </div>
-        <div class="sectlabel" style="margin-top:0">Exercise duration</div>
-        <div class="dur-picker">
-          <div class="dur-unit">
-            <button class="dur-btn" onclick="adjEx('h',-1)">−</button>
-            <div class="dur-display" id="exH">0</div>
-            <button class="dur-btn" onclick="adjEx('h',1)">＋</button>
-            <span class="dur-lbl">hrs</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="sectlabel" style="margin:0">Details</div>
+          <span style="font-size:12px;color:var(--muted);font-weight:500">all optional</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Duration</div>
+            <input type="text" placeholder="e.g. 30 min" style="padding:11px 13px;font-size:14px" />
           </div>
-          <div class="dur-sep"></div>
-          <div class="dur-unit">
-            <button class="dur-btn" onclick="adjEx('m',-1)">−</button>
-            <div class="dur-display" id="exM">00</div>
-            <button class="dur-btn" onclick="adjEx('m',1)">＋</button>
-            <span class="dur-lbl">min</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Miles</div>
+            <input type="text" inputmode="decimal" placeholder="0.0" style="padding:11px 13px;font-size:14px" />
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Steps</div>
+            <input type="text" inputmode="numeric" placeholder="0" style="padding:11px 13px;font-size:14px" />
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Laps</div>
+            <input type="text" inputmode="numeric" placeholder="0" style="padding:11px 13px;font-size:14px" />
           </div>
         </div>
-        <div class="sectlabel">Additional notes</div>
-        <textarea placeholder="Anything else about your day? (optional)" style="width:100%;padding:14px;border-radius:14px;border:2px solid var(--line);font-family:inherit;font-size:15px;font-weight:500;background:#fff;color:var(--ink);resize:none;min-height:90px;display:block"></textarea>
+        <input type="text" placeholder="Gym activity / other notes (optional)" style="padding:11px 13px;font-size:14px" />
       </div>
 
     </div>
@@ -666,9 +684,9 @@
   <!-- MED ENTRY SHEET -->
   <div class="sheet-backdrop" id="medSheet" onclick="if(event.target===this)closeMedModal()">
     <div class="sheet">
-      <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:17px;margin-bottom:16px">Add medication</div>
+      <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:17px;margin-bottom:16px">Add med / supplement</div>
       <div style="margin-bottom:12px">
-        <div class="flab" style="margin-top:0">Medication name</div>
+        <div class="flab" style="margin-top:0">Name</div>
         <input type="text" id="medName" placeholder="e.g. Gabapentin" />
       </div>
       <div style="display:flex;gap:10px;margin-bottom:20px">
@@ -681,7 +699,7 @@
           <select id="medUnit"><option>mg</option><option>mcg</option><option>ml</option><option>g</option><option>oz</option></select>
         </div>
       </div>
-      <button class="btn btn-primary" style="margin-bottom:10px" onclick="saveMed()">Add medication</button>
+      <button class="btn btn-primary" style="margin-bottom:10px" onclick="saveMed()">Add med / supplement</button>
       <button class="sheet-cancel" onclick="closeMedModal()">Cancel</button>
     </div>
   </div>
@@ -812,6 +830,7 @@
     if(empty&&!list.querySelector('.medpill')) empty.style.display='';
   }
   var LEVELS='<option>Below knee (transtibial)</option><option>Above knee (transfemoral)</option><option>Through knee</option><option>Partial foot</option><option>Ankle (Syme\'s)</option><option>Hip disarticulation</option>';
+  var CAUSES='<option value="">Select cause…</option><option>Diabetes / vascular disease</option><option>Trauma</option><option>Cancer</option><option>Infection</option><option>Congenital</option><option>Other</option>';
   function pickSide(btn){
     btn.parentNode.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('sel'));
     btn.classList.add('sel');
@@ -844,7 +863,8 @@
       +'<button class="side-btn'+(newSide==='right'?' sel':'')+'" data-side="right" onclick="pickSide(this)">🦵 Right</button>'
       +'</div>'
       +'<label class="flab">Amputation level</label><select>'+LEVELS+'</select>'
-      +'<label class="flab">When did it happen?</label><input type="month">';
+      +'<label class="flab">When did it happen?</label><input type="month">'
+      +'<label class="flab">Cause of amputation</label><select>'+CAUSES+'</select>';
     document.getElementById('limbList').appendChild(c);
     document.getElementById('addLimbBtn').style.display='none';
   }
@@ -923,6 +943,16 @@
     {q:'What did you try?', html:`
       <p class="stephint">Tap "Tried it" next to anything you attempted, then rate how much it helped. Leave the rest untouched.</p>
       <div class="card" style="margin:0 0 14px">
+        <div class="tryrow" id="tr4">
+          <div class="tryrow-head">
+            <span class="t">🤸 Stretching</span>
+            <button class="tried-btn" onclick="toggleTried('tr4')">Tried it</button>
+          </div>
+          <div class="tryrow-rate">
+            <div class="tryrow-rate-lbl">How much did it help?</div>
+            <div class="chipgrid3"><span class="chip" onclick="oneChip(this)">Helped</span><span class="chip" onclick="oneChip(this)">A little</span><span class="chip" onclick="oneChip(this)">Didn't help</span></div>
+          </div>
+        </div>
         <div class="tryrow" id="tr0">
           <div class="tryrow-head">
             <span class="t">🪞 Mirror therapy</span>
@@ -964,7 +994,7 @@
           </div>
         </div>
       </div>
-      <div class="sectlabel">Medications taken</div>
+      <div class="sectlabel">Meds / supplements taken</div>
       <select><option>Gabapentin 300mg</option><option>Gabapentin 100mg</option><option>Ibuprofen 200mg</option><option>Acetaminophen 500mg</option><option>+ Add another</option></select>`},
     // Page 4 — photo (last)
     {q:'Add a photo (optional)', html:`
